@@ -1,0 +1,43 @@
+{
+  "name": "Telegram Music Bot",
+  "description": "Telegram Music Bot for YouTube/SoundCloud/Mixcloud",
+  "keywords": [
+    "telegram",
+    "bot",
+    "telegram_bot",
+    "music",
+    "youtube",
+    "soundcloud",
+    "mixcloud",
+    "youtube-dl",
+    "python"
+  ],
+  "repository": "https://github.com/dashezup/tgmusicbot",
+  "logo": "https://i.imgur.com/xeG3yYL.jpg",
+  "env": {
+    "API_ID": {
+      "description": "api_id part of your Telegram API Key from my.telegram.org/apps",
+      "required": true
+    },
+    "API_HASH": {
+      "description": "api_hash part of your Telegram API Key from my.telegram.org/apps",
+      "required": true
+    },
+    "BOT_TOKEN": {
+      "description": "Bot token get from BotFather https://t.me/BotFather",
+      "required": true
+    },
+    "MUSIC_CHATS": {
+      "description": "One or more user/group username/id the bot serve to, separate with space",
+      "required": true
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "https://github.com/jonathanong/heroku-buildpack-ffmpeg-latest"
+    },
+    {
+      "url": "heroku/python"
+    }
+  ]
+}
