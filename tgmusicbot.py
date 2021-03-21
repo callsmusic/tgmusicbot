@@ -153,6 +153,8 @@ async def _upload_audio(message: Message, info_dict, audio_file):
     if info_dict['ext'] == 'webm':
         audio_file_opus = basename + ".opus"
         ffmpeg.input(audio_file).output(audio_file_opus, codec="copy").run()
+        os.remove(audio_file)
+        audio_file = audio_file_opus
     thumbnail_url = info_dict['thumbnail']
     if os.path.isfile(basename + ".jpg"):
         thumbnail_file = basename + ".jpg"
@@ -166,14 +168,14 @@ async def _upload_audio(message: Message, info_dict, audio_file):
     caption = f"<b><a href=\"{webpage_url}\">{title}</a></b>"
     duration = int(float(info_dict['duration']))
     performer = info_dict['uploader']
-    await message.reply_audio(audio_file_opus,
+    await message.reply_audio(audio_file,
                               caption=caption,
                               duration=duration,
                               performer=performer,
                               title=title,
                               parse_mode='HTML',
                               thumb=squarethumb_file)
-    for f in (audio_file, audio_file_opus, thumbnail_file, squarethumb_file):
+    for f in (audio_file, thumbnail_file, squarethumb_file):
         os.remove(f)
 
 

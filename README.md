@@ -8,7 +8,7 @@ for checking if the bot is running.
 
 ## Heroku
 
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/dashezup/tgmusicbot)
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/callsmusic/tgmusicbot)
 
 ## Manually
 
