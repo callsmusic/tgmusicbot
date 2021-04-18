@@ -28,7 +28,7 @@
       "required": true
     },
     "MUSIC_CHATS": {
-      "description": "One or more user/group username/id the bot serve to, separate with space",
+      "description": "One or more user/group username/id the bot serves to, separate with space",
       "required": true
     }
   },
