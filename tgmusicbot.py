@@ -45,11 +45,12 @@ import os
 import asyncio
 from datetime import timedelta
 from urllib.parse import urlparse
-from pyrogram import Client, filters, idle
-from pyrogram.types import Message
+from pyrogram import Client, filters, idle, errors
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, InlineQuery, InlineQueryResultArticle, InputTextMessageContent
 from youtube_dl import YoutubeDL
 from PIL import Image
 import ffmpeg
+from youtubesearchpython import VideosSearch
 
 MUSIC_MAX_LENGTH = 10800
 DELAY_DELETE_INFORM = 10
@@ -95,6 +96,26 @@ main_filter = (
     & ~filters.edited
 )
 
+@app.on_message(
+    filters.command("start")
+    & filters.private
+    & ~ filters.edited
+)
+async def start_(client: Client, message: Message):
+    await message.reply_text(
+        f"""<b>Hi {message.from_user.first_name},</b>
+        
+This is a music downloader bot for your channel and group. Just send me youtube links. You can also search music in inline mode!""",
+        reply_markup=InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton(
+                        "Search Music", switch_inline_query_current_chat=""
+                    )
+                ]
+            ]
+        )
+    )
 
 @app.on_message(main_filter & filters.regex("^/ping$"))
 async def ping_pong(_, message):
@@ -223,6 +244,53 @@ def _crop_to_square(img):
     bottom = (height + length) / 2
     return img.crop((left, top, right, bottom))
 
+# - inline search
+
+@app.on_inline_query()
+async def search(client: Client, query: InlineQuery):
+    answers = []
+    search_query = query.query.lower().strip().rstrip()
+
+    if search_query == "":
+        await client.answer_inline_query(
+            query.id,
+            results=answers,
+            switch_pm_text="Type YouTube Video Song Name...",
+            switch_pm_parameter="help",
+            cache_time=0
+        )
+    else:
+        videosSearch = VideosSearch(search_query, limit=50)
+
+        for v in videosSearch.result()["result"]:
+            answers.append(
+                InlineQueryResultArticle(
+                    title=v["title"],
+                    description="{}, {} views.".format(
+                        v["duration"],
+                        v["viewCount"]["short"]
+                    ),
+                    input_message_content=InputTextMessageContent(
+                        "https://www.youtube.com/watch?v={}".format(
+                            v["id"]
+                        )
+                    ),
+                    thumb_url=v["thumbnails"][0]["url"]
+                )
+            )
+
+        try:
+            await query.answer(
+                results=answers,
+                cache_time=0
+            )
+        except errors.QueryIdInvalid:
+            await query.answer(
+                results=answers,
+                cache_time=0,
+                switch_pm_text="Error: Search Timed Out!",
+                switch_pm_parameter="",
+            )
 
 # - start
 
