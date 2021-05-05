@@ -3,3 +3,4 @@ Pyrogram
 TgCrypto
 ffmpeg-python
 youtube-dl
+youtube_search_python
