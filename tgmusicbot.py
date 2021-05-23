@@ -96,6 +96,40 @@ main_filter = (
 )
 
 
+def extract_link(message: Message):
+    leech_url = None
+    custom_file_name = None
+    entities = (
+        message.entities or
+        message.caption_entities or
+        []
+    )
+    text = (
+        message.text or
+        message.caption or
+        ""
+    )
+    if message and text and len(entities) > 0:
+        for one_entity in entities:
+            if one_entity.type == "url":
+                leech_url = text[
+                    one_entity.offset:one_entity.offset + one_entity.length
+                ]
+            elif one_entity.type == "text_link":
+                leech_url = one_entity.url
+            if leech_url:
+                break
+        if "|" in text:
+            _, custom_file_name = text.split("|", maxsplit=1)
+        if leech_url:
+            leech_url = leech_url.strip()
+        if custom_file_name:
+            custom_file_name = custom_file_name.strip()
+        else:
+            custom_file_name = None
+    return leech_url, custom_file_name
+
+
 @app.on_message(main_filter & filters.regex("^/ping$"))
 async def ping_pong(_, message):
     await _reply_and_delete_later(message, "pong",
@@ -111,6 +145,7 @@ async def music_downloader(_, message: Message):
 
 async def _fetch_and_send_music(message: Message):
     await message.reply_chat_action("typing")
+    yt_url, _ = extract_link(message)
     try:
         ydl_opts = {
             'format': 'bestaudio',
@@ -118,7 +153,7 @@ async def _fetch_and_send_music(message: Message):
             'writethumbnail': True
         }
         ydl = YoutubeDL(ydl_opts)
-        info_dict = ydl.extract_info(message.text, download=False)
+        info_dict = ydl.extract_info(yt_url, download=False)
         # send a link as a reply to bypass Music category check
         if not message.reply_to_message \
                 and _youtube_video_not_music(info_dict):
