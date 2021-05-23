@@ -145,13 +145,15 @@ async def music_downloader(_, message: Message):
 
 async def _fetch_and_send_music(message: Message):
     await message.reply_chat_action("typing")
-    yt_url, _ = extract_link(message)
+    yt_url, cfn = extract_link(message)
     try:
         ydl_opts = {
             'format': 'bestaudio',
             'outtmpl': '%(title)s - %(extractor)s-%(id)s.%(ext)s',
             'writethumbnail': True
         }
+        if cfn:
+            ydl_opts['outtmpl'] = cfn
         ydl = YoutubeDL(ydl_opts)
         info_dict = ydl.extract_info(yt_url, download=False)
         # send a link as a reply to bypass Music category check
