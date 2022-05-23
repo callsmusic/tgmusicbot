@@ -47,6 +47,7 @@ from datetime import timedelta
 from urllib.parse import urlparse
 from pyrogram import Client, filters, idle
 from pyrogram.types import Message
+from pyrogram.enums import ParseMode, ChatAction
 from youtube_dl import YoutubeDL
 from PIL import Image
 import ffmpeg
@@ -92,7 +93,7 @@ main_filter = (
     filters.text
     & filters.chat(MUSIC_CHATS)
     & filters.incoming
-    & ~filters.edited
+    #& ~filters.edited
 )
 
 
@@ -110,7 +111,7 @@ async def music_downloader(_, message: Message):
 
 
 async def _fetch_and_send_music(message: Message):
-    await message.reply_chat_action("typing")
+    await message.reply_chat_action(ChatAction.TYPING)
     try:
         ydl_opts = {
             'format': 'bestaudio',
@@ -142,12 +143,12 @@ async def _fetch_and_send_music(message: Message):
         audio_file = ydl.prepare_filename(info_dict)
         task = asyncio.create_task(_upload_audio(message, info_dict,
                                                  audio_file))
-        await message.reply_chat_action("upload_document")
+        await message.reply_chat_action(ChatAction.UPLOAD_DOCUMENT)
         await d_status.delete()
         while not task.done():
             await asyncio.sleep(4)
-            await message.reply_chat_action("upload_document")
-        await message.reply_chat_action("cancel")
+            await message.reply_chat_action(ChatAction.UPLOAD_DOCUMENT)
+        await message.reply_chat_action(ChatAction.CANCEL)
         if message.chat.type == "private":
             await message.delete()
     except Exception as e:
@@ -192,7 +193,7 @@ async def _upload_audio(message: Message, info_dict, audio_file):
                               duration=duration,
                               performer=performer,
                               title=title,
-                              parse_mode='HTML',
+                              parse_mode=ParseMode.HTML,
                               thumb=squarethumb_file)
     for f in (audio_file, thumbnail_file, squarethumb_file):
         os.remove(f)
@@ -210,7 +211,7 @@ def make_squarethumb(thumbnail, output):
     original_thumb = Image.open(thumbnail)
     squarethumb = _crop_to_square(original_thumb)
     squarethumb.thumbnail((TG_THUMB_MAX_LENGTH, TG_THUMB_MAX_LENGTH),
-                          Image.ANTIALIAS)
+                          Image.Resampling.LANCZOS)
     squarethumb.save(output)
 
 

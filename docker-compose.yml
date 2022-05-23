@@ -1,0 +1,11 @@
+services:
+  tgmusicbot:
+    build: .
+    environment:
+        - API_ID
+        - API_HASH
+        - BOT_TOKEN
+        - MUSIC_CHATS
+    tty: true
+    stdin_open: true
+
